@@ -2,7 +2,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import absolute_import
-
+from builtins import str
 
 from PyQt4 import QtCore, QtGui
 
@@ -99,13 +99,13 @@ class CollectionModel(QtCore.QAbstractTableModel):
                 try:
                     resValue = float(entry['result'][number])
                     if self.resultViewMode == CollectionModel.ResultViewRaw:
-                        res = unicode(resValue)
+                        res = str(resValue)
                     elif self.resultViewMode == CollectionModel.ResultViewRounded:
                         resValue = round(resValue, 2)
-                        res = unicode(resValue)
+                        res = str(resValue)
                     elif self.resultViewMode == CollectionModel.ResultViewPercent:
                         resValue = round(resValue * 100, 2)
-                        res = unicode(resValue) + '%'
+                        res = str(resValue) + '%'
                     else:
                         raise Exception('Wrong result view mode!')
                 except (KeyError, IndexError, TypeError):
@@ -219,7 +219,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
         self.resultLength = -1
         for entry in entries:
             for option in entry['config']:
-                allConfigFields.add(unicode(option))
+                allConfigFields.add(str(option))
             if 'result' in entry:
                 if entry is None:
                     continue  # forget it
@@ -405,7 +405,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
 
     # called when the set of fields to be displayed has been changed
     def slotFieldSelectionChanged(self, newFieldList):
-        newFieldList = [unicode(x) for x in newFieldList]
+        newFieldList = [str(x) for x in newFieldList]
         for f in newFieldList:
             assert f in self.allConfigFields
 

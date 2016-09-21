@@ -93,7 +93,7 @@ class FieldChoiceWidget(QtGui.QWidget):
     def reset(self, newAvailableTexts, newSelectedTexts):
         # precheck
         for txt in newAvailableTexts:
-            assert type(txt) == unicode
+            assert isinstance(txt, str)
         for txt in newSelectedTexts:
             assert txt in newAvailableTexts
 

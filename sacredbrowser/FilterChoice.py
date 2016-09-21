@@ -1,6 +1,7 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from builtins import str
 
 # TODO READ
 # http://stackoverflow.com/questions/27113262/making-changes-to-a-qtextedit-without-adding-an-undo-command-to-the-undo-stack
@@ -131,7 +132,7 @@ Regular expressions can be enclosed in slashes
         resultDict = {'$and': []}
         processedResultFieldNames = []
 
-        lines = unicode(queryText).split('\n')
+        lines = str(queryText).split('\n')
         for (lX, line) in enumerate(lines):
             # skip empty lines and comments
             if re.match(r'^\s*$', line) or re.match(r'^\s*#.*$', line):
