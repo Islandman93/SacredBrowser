@@ -1,6 +1,7 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 
 import sys
@@ -11,11 +12,11 @@ from PyQt4 import QtCore, QtGui
 import gridfs
 
 # local imports
-import MainWin
-import SortDialog
-import DbConnection
-import DbModel
-import CollectionModel
+from . import MainWin
+from . import SortDialog
+from . import DbConnection
+from . import DbModel
+from . import CollectionModel
 
 # Main application class, subclassed from QT framework
 class Application(QtGui.QApplication):
@@ -70,7 +71,7 @@ class Application(QtGui.QApplication):
 
         # set initial values for check boxes
         quickDeleteChecked = self.settings.value('Global/quickDeleteChecked')
-        if quickDeleteChecked.isValid():
+        if quickDeleteChecked is not None and quickDeleteChecked.isValid():
             self.mainWin.quickDelete.setChecked(quickDeleteChecked.toBool())
 
         self.mainWin.resultViewRaw.setChecked(True)
@@ -105,7 +106,7 @@ class Application(QtGui.QApplication):
     ## SLOTS
     ########################################################
 
-    # this is called when the user chooses a mongodb collection 
+    # this is called when the user chooses a mongodb collection
     def slotChooseCollection(self,index):
         node = index.internalPointer()
         if node.databaseName is not None and node.collectionId is not None:
@@ -135,11 +136,10 @@ class Application(QtGui.QApplication):
     ########################################################
     ## SIGNALS
     ########################################################
-        
+
 def run():
     QtCore.pyqtRemoveInputHook() # may be helpful when debugging with pdb
     print('Starting SacredBrowser...')
     app = Application()
     result = app.exec_()
     return result
-

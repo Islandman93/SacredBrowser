@@ -21,11 +21,15 @@ class DbConnection(object):
         if lastMongoURI is None:
             lastMongoURI = 'mongodb://localhost:27017'
         else:
-            lastMongoURI = lastMongoURI.toString()
+            # Fix in python 3 AttributeError: 'str' object has no attribute 'toString'
+            try:
+                lastMongoURI = lastMongoURI.toString()
+            except AttributeError:
+                pass
 
         (newMongoUri,ok) = QtGui.QInputDialog.getText(None,'Connect to database','Connection URI (example: mongodb://localhost:27017)',QtGui.QLineEdit.Normal,lastMongoURI)
-        
-        if ok: 
+
+        if ok:
             self.application.settings.setValue('Global/LastMongoURI',str(newMongoUri))
             try:
                 self.mongoClient = pymongo.mongo_client.MongoClient(str(newMongoUri),socketTimeoutMS=50000) # TODO allow for remote connection?
@@ -41,10 +45,10 @@ class DbConnection(object):
     def getDatabaseNames(self):
         return sorted(self.mongoClient.database_names())
 
-    # go through collections and return 
+    # go through collections and return
     # db may be a string or a database object
     def getCollectionNames(self,db):
-        if type(db) == str or type(db) == unicode:
+        if isinstance(db, str):
             db = getDatabase(db)
         return db.collection_names()
 
@@ -53,6 +57,6 @@ class DbConnection(object):
 
     def getCollection(self,db,name):
         # db may be a string or a database object
-        if type(db) == str or type(db) == unicode:
+        if isinstance(db, str):
             db = getDatabase(db)
         return db[name]

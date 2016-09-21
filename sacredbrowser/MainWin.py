@@ -1,14 +1,15 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 from PyQt4 import QtCore, QtGui
 
-import DbTree
-import FieldChoiceWidget
-import FilterChoice
-import CollectionView
-import CollectionModel
+from . import DbTree
+from . import FieldChoiceWidget
+from . import FilterChoice
+from . import CollectionView
+from . import CollectionModel
 
 # Main window of the application, created by the Application class, which is also
 # responsible for setting the signal/slot connections
@@ -38,7 +39,7 @@ class MainWin(QtGui.QMainWindow):
 
         self.sortButton = QtGui.QPushButton('&Sort Dialog')
         self.sortButton.setCheckable(True)
-    
+
         self.deleteButton = QtGui.QPushButton('&Delete')
         self.copyButton = QtGui.QPushButton('&Copy')
         self.fullEntryButton = QtGui.QPushButton('&Full entry')
@@ -86,7 +87,7 @@ class MainWin(QtGui.QMainWindow):
 
         self.belowCollectionViewWidget = QtGui.QWidget()
         self.belowCollectionViewWidget.setLayout(self.belowCollectionViewLayout)
-        
+
         self.leftVLayout = QtGui.QVBoxLayout()
         self.leftVLayout.addWidget(self.dbTree)
         self.leftVLayout.addWidget(self.connectToDb)
@@ -115,5 +116,5 @@ class MainWin(QtGui.QMainWindow):
 
     # reimplemented to close sort dialog as well
     def closeEvent(self,event):
-        
+
         self.application.sortDialog = None # A HACK TODO

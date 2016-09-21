@@ -1,15 +1,16 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 
 from PyQt4 import QtCore, QtGui
 
-import Config
+from . import Config
 import time
 import re
 
-import DetailsDialog
+from . import DetailsDialog
 
 import pymongo
 import bson
@@ -37,7 +38,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
 
     # constructor
     def __init__(self,application):
-        
+
         self.application = application
 
         # this pointer should be set immediately after construction
@@ -64,8 +65,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
 
         # length of result vector - necessary for good display
         self.resultLength = -1
-        
-        # result view mode 
+
+        # result view mode
         self.resultViewMode = CollectionModel.ResultViewRaw
 
         # allow quick delete (without confirmation)
@@ -154,7 +155,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
         columnWidths = dict()
         for i in range(self.columnCount()):
             thisField = self.headerData(i,QtCore.Qt.Horizontal,QtCore.Qt.DisplayRole)
-            columnWidths[thisField] = self.getAssociatedView().columnWidth(i) 
+            columnWidths[thisField] = self.getAssociatedView().columnWidth(i)
         assert set(columnWidths.keys()) == set(self.displayedFields())
         return columnWidths
 
@@ -179,7 +180,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
 
     # Resets all content of this view, emits suitable signals to the fieldView and the sort dialog.
     def resetCollection(self):
-        # get current collection from application, create a query, read all configs to determine 
+        # get current collection from application, create a query, read all configs to determine
         # the possible headers
 
         # read stuff from settings (check later whether that's valid)
@@ -216,7 +217,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
                     self.resultLength = thisResultLength
 
 
-        self.allConfigFields = list(allConfigFields) 
+        self.allConfigFields = list(allConfigFields)
         self.resultFields = [ 'Result %d' % m for m in range(1,self.resultLength + 1) ]
 
         # set displayed fields
@@ -234,7 +235,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
             self.setColumnWidths({}) # set to default
 
         # query with empty dict - show everything. This fills self.collectionData
-        self.makeQuery({}) 
+        self.makeQuery({})
 
         # tell this the fieldChoice widget - note that slotFieldSelectionChanged is already
         # connected, from the Application class
@@ -243,12 +244,12 @@ class CollectionModel(QtCore.QAbstractTableModel):
         # the sort dialog is reset by fieldChoiceChanged
 
         self.application.mainWin.filterChoice.reset()
-        
+
         if lastSortOrder and lastSortOrder.isValid():
             # filter to make sure the fields actually still exist
             lastSortOrderFields = [str(x.toString()) for x in lastSortOrder.toList() if str(x.toString()) in self.displayedFields()]
             self.application.sortDialog.setSortOrder(lastSortOrderFields)
-            
+
         # set column widths
         if lcwTemp and lcwTemp.isValid():
             lcwTemp = lcwTemp.toPyObject()
@@ -279,7 +280,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
     def getCurrentAverage(self):
         if len(self.collectionData) == 0:
             return None
-        
+
         total = 0
         sums = None
         for tup in self.collectionData:
@@ -445,7 +446,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
     # was loaded
     def slotDoNewSearch(self,queryDict = None):
         # Fill self.collectionData. Layout signals are emitted automatically
-        self.makeQuery(queryDict) 
+        self.makeQuery(queryDict)
 
         # resort
         self.slotSortOrderChanged()
@@ -484,7 +485,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
         # sort: first row, then column
         sortKey = lambda ind: (ind.row(),ind.column())
         indexes.sort(key=sortKey)
-        
+
         # minimum column for proper alignment
         minCol = min([ind.column() for ind in indexes])
 
@@ -517,11 +518,11 @@ class CollectionModel(QtCore.QAbstractTableModel):
     def slotFullEntry(self):
         indexes = self.getAssociatedView().selectedIndexes()
         rows = list(set([ind.row() for ind in indexes]))
-        
+
         if len(rows) != 1:
             QtGui.QMessageBox.warning(None,'Error displaying entry details','For displaying full details, please choose exactly one row')
             return
-            
+
         # sort: first row, then column
         thisEntry = self.collectionData[rows[0]][1]
         dlg = DetailsDialog.DetailsDialog(self.application,thisEntry,self.application.currentGridFs)
@@ -548,11 +549,9 @@ class CollectionModel(QtCore.QAbstractTableModel):
         for entry in entries:
             thisId = entry['_id']
             self.application.currentRunCollection.remove({'_id': bson.objectid.ObjectId(thisId)})
-    
+
         # remove selection
         self.getAssociatedView().selectionModel().clear()
 
         # update
         self.slotDoNewSearch()
-
-
