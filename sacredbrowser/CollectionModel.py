@@ -15,29 +15,29 @@ from . import DetailsDialog
 import pymongo
 import bson
 
+
 class CollectionModel(QtCore.QAbstractTableModel):
     ########################################################
-    ## CONSTANTS
+    # CONSTANTS
     ########################################################
 
     # color backgrounds for database entries with different properties
-    DuplicateColor = QtGui.QColor(255,255,150)
-    FailedColor = QtGui.QColor(255,50,50)
-    InterruptedColor = QtGui.QColor(255,150,150)
-    RunningColor = QtGui.QColor(200,200,255)
+    DuplicateColor = QtGui.QColor(255, 255, 150)
+    FailedColor = QtGui.QColor(255, 50, 50)
+    InterruptedColor = QtGui.QColor(255, 150, 150)
+    RunningColor = QtGui.QColor(200, 200, 255)
 
     # note: also used as IDs in the QButtonGroup
     ResultViewRaw = 1
     ResultViewRounded = 2
     ResultViewPercent = 3
 
-
     ########################################################
-    ## INITIALIZATION
+    # INITIALIZATION
     ########################################################
 
     # constructor
-    def __init__(self,application):
+    def __init__(self, application):
 
         self.application = application
 
@@ -50,7 +50,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
 
         # The config fields which are currently displayed. This is set by the fieldChoice widget,
         # which calls slotFieldSelectionChanged
-        # Note that self.displayedFields() returns self.displayedConfigFields + self.resultFields
+        # Note that self.displayedFields() returns self.displayedConfigFields +
+        # self.resultFields
         self.displayedConfigFields = []
 
         # The current result fields (counted)
@@ -73,15 +74,15 @@ class CollectionModel(QtCore.QAbstractTableModel):
         self.allowQuickDelete = False
 
         # might have to go last
-        super(CollectionModel,self).__init__()
+        super(CollectionModel, self).__init__()
 
     ########################################################
-    ## OVERLOADS
+    # OVERLOADS
     ########################################################
-    def rowCount(self, parent = None):
+    def rowCount(self, parent=None):
         return len(self.collectionData)
 
-    def columnCount(self, parent = None):
+    def columnCount(self, parent=None):
         return len(self.displayedFields())
 
     # Main accessor function to the data underlying this model
@@ -91,21 +92,23 @@ class CollectionModel(QtCore.QAbstractTableModel):
         entry = self.collectionData[index.row()][1]
         field = self.displayedFields()[index.column()]
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.ToolTipRole:
-            if re.match(r'^Result [0-9]+$',field):
-                number = int(re.match(r'^Result ([0-9]+)$',field).groups()[0]) - 1 # counting!!!
+            if re.match(r'^Result [0-9]+$', field):
+                # counting!!!
+                number = int(
+                    re.match(r'^Result ([0-9]+)$', field).groups()[0]) - 1
                 try:
                     resValue = float(entry['result'][number])
                     if self.resultViewMode == CollectionModel.ResultViewRaw:
                         res = unicode(resValue)
                     elif self.resultViewMode == CollectionModel.ResultViewRounded:
-                        resValue = round(resValue,2)
+                        resValue = round(resValue, 2)
                         res = unicode(resValue)
                     elif self.resultViewMode == CollectionModel.ResultViewPercent:
-                        resValue = round(resValue * 100,2)
+                        resValue = round(resValue * 100, 2)
                         res = unicode(resValue) + '%'
                     else:
                         raise Exception('Wrong result view mode!')
-                except (KeyError,IndexError,TypeError):
+                except (KeyError, IndexError, TypeError):
                     res = '---'
             else:
                 try:
@@ -137,9 +140,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
         else:
             return None
 
-
     ########################################################
-    ## MAIN PART
+    # MAIN PART
     ########################################################
 
     # return the associated view
@@ -154,21 +156,27 @@ class CollectionModel(QtCore.QAbstractTableModel):
     def getColumnWidths(self):
         columnWidths = dict()
         for i in range(self.columnCount()):
-            thisField = self.headerData(i,QtCore.Qt.Horizontal,QtCore.Qt.DisplayRole)
+            thisField = self.headerData(
+                i, QtCore.Qt.Horizontal, QtCore.Qt.DisplayRole)
             columnWidths[thisField] = self.getAssociatedView().columnWidth(i)
         assert set(columnWidths.keys()) == set(self.displayedFields())
         return columnWidths
 
     # sets the column widths, pass in a dict indexed by field name
-    def setColumnWidths(self,cwDict):
+    def setColumnWidths(self, cwDict):
         for i in range(self.columnCount()):
-            thisField = self.headerData(i,QtCore.Qt.Horizontal,QtCore.Qt.DisplayRole)
-            thisWidth = cwDict.get(thisField,self.getAssociatedView().DefaultColumnWidth)
-            self.getAssociatedView().setColumnWidth(i,max(self.getAssociatedView().MinimumColumnWidth,thisWidth))
+            thisField = self.headerData(
+                i, QtCore.Qt.Horizontal, QtCore.Qt.DisplayRole)
+            thisWidth = cwDict.get(
+                thisField, self.getAssociatedView().DefaultColumnWidth)
+            self.getAssociatedView().setColumnWidth(
+                i, max(self.getAssociatedView().MinimumColumnWidth, thisWidth))
 
-    # Called when the column size changes. Saves the change to the configuration
-    def slotSectionResized(self,column,oldWidth,newWidth):
-        self.application.settings.setValue('Collections' + '/' + self.application.collectionSettingsName + '/' + 'columnWidths',self.getColumnWidths())
+    # Called when the column size changes. Saves the change to the
+    # configuration
+    def slotSectionResized(self, column, oldWidth, newWidth):
+        self.application.settings.setValue(
+            'Collections' + '/' + self.application.collectionSettingsName + '/' + 'columnWidths', self.getColumnWidths())
 
     # Called to reset the column widths
     def slotResetColWidth(self):
@@ -178,7 +186,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
 #         # also column widths
 #         self.application.settings.setValue('Collections' + '/' + self.application.collectionSettingsName + '/' + 'columnWidths',self.getColumnWidths())
 
-    # Resets all content of this view, emits suitable signals to the fieldView and the sort dialog.
+    # Resets all content of this view, emits suitable signals to the fieldView
+    # and the sort dialog.
     def resetCollection(self):
         # get current collection from application, create a query, read all configs to determine
         # the possible headers
@@ -186,14 +195,18 @@ class CollectionModel(QtCore.QAbstractTableModel):
         # read stuff from settings (check later whether that's valid)
 
         # read displayed fields from settings
-        lastDispFields = self.application.settings.value('Collections' + '/' + self.application.collectionSettingsName + '/' + 'displayedConfigFields')
+        lastDispFields = self.application.settings.value(
+            'Collections' + '/' + self.application.collectionSettingsName + '/' + 'displayedConfigFields')
         # retrieve sort order
-        lastSortOrder = self.application.settings.value('Collections' + '/' + self.application.collectionSettingsName + '/' + 'sortOrder')
+        lastSortOrder = self.application.settings.value(
+            'Collections' + '/' + self.application.collectionSettingsName + '/' + 'sortOrder')
         # retrieve column widths
-        lcwTemp = self.application.settings.value('Collections' + '/' + self.application.collectionSettingsName + '/' + 'columnWidths')
+        lcwTemp = self.application.settings.value(
+            'Collections' + '/' + self.application.collectionSettingsName + '/' + 'columnWidths')
 
         # retrieve view mode
-        lastViewMode = self.application.settings.value('Collections' + '/' + self.application.collectionSettingsName + '/' + 'resultViewMode')
+        lastViewMode = self.application.settings.value(
+            'Collections' + '/' + self.application.collectionSettingsName + '/' + 'resultViewMode')
 
         # start here
         self.layoutAboutToBeChanged.emit()
@@ -201,24 +214,25 @@ class CollectionModel(QtCore.QAbstractTableModel):
         # first make headers
         entries = list(self.application.currentRunCollection.find({}))
         allConfigFields = set()
-        # add config entries to displayed headers, and determine the length of "result"
+        # add config entries to displayed headers, and determine the length of
+        # "result"
         self.resultLength = -1
         for entry in entries:
             for option in entry['config']:
                 allConfigFields.add(unicode(option))
             if 'result' in entry:
                 if entry is None:
-                    continue # forget it
-                elif type(entry['result']) in [ tuple,list ]:
+                    continue  # forget it
+                elif type(entry['result']) in [tuple, list]:
                     thisResultLength = len(entry['result'])
-                else: # hm
+                else:  # hm
                     thisResultLength = 1
                 if thisResultLength > self.resultLength:
                     self.resultLength = thisResultLength
 
-
         self.allConfigFields = list(allConfigFields)
-        self.resultFields = [ 'Result %d' % m for m in range(1,self.resultLength + 1) ]
+        self.resultFields = ['Result %d' %
+                             m for m in range(1, self.resultLength + 1)]
 
         # set displayed fields
         if lastDispFields and lastDispFields.isValid():
@@ -228,33 +242,38 @@ class CollectionModel(QtCore.QAbstractTableModel):
                 self.displayedConfigFields = []
             else:
                 # filter to make sure the fields actually still exist
-                self.displayedConfigFields = [str(x.toString()) for x in lastDispFields.toList() if str(x.toString()) in self.allConfigFields]
+                self.displayedConfigFields = [str(x.toString()) for x in lastDispFields.toList(
+                ) if str(x.toString()) in self.allConfigFields]
 
         else:
             self.displayedConfigFields = list(allConfigFields)
-            self.setColumnWidths({}) # set to default
+            self.setColumnWidths({})  # set to default
 
-        # query with empty dict - show everything. This fills self.collectionData
+        # query with empty dict - show everything. This fills
+        # self.collectionData
         self.makeQuery({})
 
         # tell this the fieldChoice widget - note that slotFieldSelectionChanged is already
         # connected, from the Application class
-        # note that the set of displayed fields is ALWAYS augmented by the RESULT field
-        self.application.mainWin.fieldChoice.reset(self.allConfigFields,self.displayedConfigFields)
+        # note that the set of displayed fields is ALWAYS augmented by the
+        # RESULT field
+        self.application.mainWin.fieldChoice.reset(
+            self.allConfigFields, self.displayedConfigFields)
         # the sort dialog is reset by fieldChoiceChanged
 
         self.application.mainWin.filterChoice.reset()
 
         if lastSortOrder and lastSortOrder.isValid():
             # filter to make sure the fields actually still exist
-            lastSortOrderFields = [str(x.toString()) for x in lastSortOrder.toList() if str(x.toString()) in self.displayedFields()]
+            lastSortOrderFields = [str(x.toString()) for x in lastSortOrder.toList(
+            ) if str(x.toString()) in self.displayedFields()]
             self.application.sortDialog.setSortOrder(lastSortOrderFields)
 
         # set column widths
         if lcwTemp and lcwTemp.isValid():
             lcwTemp = lcwTemp.toPyObject()
             # require string keys
-            lastColumnWidths = { str(x): lcwTemp[x] for x in lcwTemp.keys() }
+            lastColumnWidths = {str(x): lcwTemp[x] for x in lcwTemp.keys()}
             self.setColumnWidths(lastColumnWidths)
 
         # set view mode
@@ -276,7 +295,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
     # Computes the average of the currently visible data, EXCLUDING duplicates and data points without result.
-    # Returns a tuple (or None if no data is visible), raises an exception if something is wrong.
+    # Returns a tuple (or None if no data is visible), raises an exception if
+    # something is wrong.
     def getCurrentAverage(self):
         if len(self.collectionData) == 0:
             return None
@@ -299,9 +319,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
             sums[i] /= total
         return tuple(sums)
 
-
     # Make a new query and fill collectionData
-    def makeQuery(self,query=None,guard=True):
+    def makeQuery(self, query=None, guard=True):
         # if query is None, the last query is used
         # guard causes the layout signals to be sent
         if query is not None:
@@ -313,7 +332,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
             print('Warning: Trying to do query without defining a query')
             return
 
-        entries=list(self.application.currentRunCollection.find(query))
+        entries = list(self.application.currentRunCollection.find(query))
         # TODO sort
         if guard:
             self.layoutAboutToBeChanged.emit()
@@ -323,7 +342,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
         coveredCompareKeys = []
         duplicateCounter = 0
         resultlessCounter = 0
-        for (pos,entry) in enumerate(entries):
+        for (pos, entry) in enumerate(entries):
             # check if dup
             compKey = Config.compareFunc(entry)
             if compKey in coveredCompareKeys:
@@ -337,16 +356,17 @@ class CollectionModel(QtCore.QAbstractTableModel):
             if 'result' not in entry.keys():
                 resultlessCounter += 1
             else:
-                if type(entry['result']) not in [ tuple,list ]:
+                if type(entry['result']) not in [tuple, list]:
                     entry['result'] = (entry['result'],)
 
             index = self.createIndex(pos, 0, entry)
-            tup = (index,entry)
-            self.collectionData += [ tup ]
+            tup = (index, entry)
+            self.collectionData += [tup]
         if guard:
             self.layoutChanged.emit()
 
-        self.application.showStatusMessage('Loaded %d entries, found %d possible duplicates, %d without result' % (len(entries),duplicateCounter,resultlessCounter))
+        self.application.showStatusMessage('Loaded %d entries, found %d possible duplicates, %d without result' % (
+            len(entries), duplicateCounter, resultlessCounter))
         self.displayAverage()
 
     # called to update the display of column averages
@@ -364,26 +384,27 @@ class CollectionModel(QtCore.QAbstractTableModel):
                     avSuffix = ''
                 # is a list
                 if self.resultViewMode == CollectionModel.ResultViewRaw:
-#                     avTemp = [str(av) for av in average ]
-                    avTemp = ['%.2f' % (av) for av in average ]
+                    #                     avTemp = [str(av) for av in average ]
+                    avTemp = ['%.2f' % (av) for av in average]
                 elif self.resultViewMode == CollectionModel.ResultViewRounded:
-                    avTemp = ['%.2f' % (av) for av in average ]
+                    avTemp = ['%.2f' % (av) for av in average]
                 elif self.resultViewMode == CollectionModel.ResultViewPercent:
-                    avTemp = ['%.2f%%' % (av * 100) for av in average ]
+                    avTemp = ['%.2f%%' % (av * 100) for av in average]
                 else:
                     raise Exception('Wrong result view mode!')
                 average = ','.join(avTemp)
-                self.application.mainWin.average.setText('Averages (excluding duplicates): %s %s' % (str(average),avSuffix))
+                self.application.mainWin.average.setText(
+                    'Averages (excluding duplicates): %s %s' % (str(average), avSuffix))
         except Exception as e:
-            self.application.mainWin.average.setText('Cannot compute averages: %s' % str(e))
-
+            self.application.mainWin.average.setText(
+                'Cannot compute averages: %s' % str(e))
 
     ########################################################
-    ## SLOTS (called from helper widgets etc)
+    # SLOTS (called from helper widgets etc)
     ########################################################
 
     # called when the set of fields to be displayed has been changed
-    def slotFieldSelectionChanged(self,newFieldList):
+    def slotFieldSelectionChanged(self, newFieldList):
         newFieldList = [unicode(x) for x in newFieldList]
         for f in newFieldList:
             assert f in self.allConfigFields
@@ -393,7 +414,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
         # now change layout
         self.layoutAboutToBeChanged.emit()
         self.displayedConfigFields = newFieldList
-        self.resultFields = [ 'Result %d' % m for m in range(1,self.resultLength + 1) ]
+        self.resultFields = ['Result %d' %
+                             m for m in range(1, self.resultLength + 1)]
 
         self.setColumnWidths(cwDict)
 
@@ -402,25 +424,29 @@ class CollectionModel(QtCore.QAbstractTableModel):
 
         # write config
         if len(self.displayedConfigFields) > 0:
-            self.application.settings.setValue('Collections' + '/' + self.application.collectionSettingsName + '/' + 'displayedConfigFields',self.displayedConfigFields)
-        else: # QVariant bug: cannot store empty list, save 0 instead
-            self.application.settings.setValue('Collections' + '/' + self.application.collectionSettingsName + '/' + 'displayedConfigFields',0)
+            self.application.settings.setValue(
+                'Collections' + '/' + self.application.collectionSettingsName + '/' + 'displayedConfigFields', self.displayedConfigFields)
+        else:  # QVariant bug: cannot store empty list, save 0 instead
+            self.application.settings.setValue(
+                'Collections' + '/' + self.application.collectionSettingsName + '/' + 'displayedConfigFields', 0)
 
-    # called when the sort order of entries must be changed due to a command from the sort dialog
+    # called when the sort order of entries must be changed due to a command
+    # from the sort dialog
     def slotSortOrderChanged(self):
-        allEntries = [ e[1] for e in self.collectionData ]
+        allEntries = [e[1] for e in self.collectionData]
         sortOrder = self.application.sortDialog.currentSortOrder
 
         # too complicated to be a lambda
         def sortKey(entry):
             key = []
             for field in sortOrder:
-                match = re.match(r'^Result ([0-9]+)$',field)
+                match = re.match(r'^Result ([0-9]+)$', field)
                 if not match:
                     key.append(entry['config'].get(field))
                 else:
                     try:
-                        key.append(entry['result'][int(match.groups()[0]) - 1]) # count from 0
+                        # count from 0
+                        key.append(entry['result'][int(match.groups()[0]) - 1])
                     except IndexError:
                         key.append(None)
                     except KeyError:
@@ -432,19 +458,20 @@ class CollectionModel(QtCore.QAbstractTableModel):
         self.layoutAboutToBeChanged.emit()
         self.collectionData = []
 
-        for (pos,entry) in enumerate(allEntries):
+        for (pos, entry) in enumerate(allEntries):
             index = self.createIndex(pos, 0, entry)
-            tup = (index,entry)
-            self.collectionData += [ tup ]
+            tup = (index, entry)
+            self.collectionData += [tup]
 
         self.layoutChanged.emit()
 
         # save to settings
-        self.application.settings.setValue('Collections' + '/' + self.application.collectionSettingsName + '/' + 'sortOrder',sortOrder)
+        self.application.settings.setValue(
+            'Collections' + '/' + self.application.collectionSettingsName + '/' + 'sortOrder', sortOrder)
 
     # called when a new filter has been input to the FilterChoice widget, or when a new collection
     # was loaded
-    def slotDoNewSearch(self,queryDict = None):
+    def slotDoNewSearch(self, queryDict=None):
         # Fill self.collectionData. Layout signals are emitted automatically
         self.makeQuery(queryDict)
 
@@ -452,7 +479,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
         self.slotSortOrderChanged()
 
     # called when the 'Results in %' checkbox was toggled
-    def slotResultViewChanged(self,modeId):
+    def slotResultViewChanged(self, modeId):
         # change the view
         self.layoutAboutToBeChanged.emit()
         self.resultViewMode = modeId
@@ -460,20 +487,22 @@ class CollectionModel(QtCore.QAbstractTableModel):
 
         # save that to settings
         if self.application.currentDatabase is not None and self.application.currentRunCollection is not None:
-            self.application.settings.setValue('Collections' + '/' + self.application.collectionSettingsName + '/' + 'resultViewMode',modeId)
+            self.application.settings.setValue(
+                'Collections' + '/' + self.application.collectionSettingsName + '/' + 'resultViewMode', modeId)
 
         # change average
         self.displayAverage()
 
     # called when the 'allow delete without confirmation' checkbox was toggled
-    def slotAllowQuickDeleteToggled(self,state):
+    def slotAllowQuickDeleteToggled(self, state):
         if state > 0:
             self.allowQuickDelete = True
         else:
             self.allowQuickDelete = False
 
         # save to settings
-        self.application.settings.setValue('Global/quickDeleteChecked',self.allowQuickDelete)
+        self.application.settings.setValue(
+            'Global/quickDeleteChecked', self.allowQuickDelete)
 
     # copies the content of the selection to the clipboard
     def slotCopyToClipboard(self):
@@ -483,7 +512,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
             return
 
         # sort: first row, then column
-        sortKey = lambda ind: (ind.row(),ind.column())
+        sortKey = lambda ind: (ind.row(), ind.column())
         indexes.sort(key=sortKey)
 
         # minimum column for proper alignment
@@ -497,13 +526,13 @@ class CollectionModel(QtCore.QAbstractTableModel):
         for ind in indexes:
             thisRow = ind.row()
             thisCol = ind.column()
-            thisData = str(self.data(ind,QtCore.Qt.DisplayRole))
+            thisData = str(self.data(ind, QtCore.Qt.DisplayRole))
             assert thisRow >= curRow
-            for rowX in range(curRow,thisRow):
+            for rowX in range(curRow, thisRow):
                 textResult += '\n'
-                curCol = minCol # reset at new line
+                curCol = minCol  # reset at new line
             curRow = thisRow
-            for colX in range(curCol,thisCol):
+            for colX in range(curCol, thisCol):
                 textResult += ','
             curCol = thisCol
 
@@ -512,7 +541,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
 
         # copy that
         self.application.clipboard().setText(textResult)
-        self.application.showStatusMessage('Copied %d cells from %d entries.' % (len(indexes),len(allRows)))
+        self.application.showStatusMessage(
+            'Copied %d cells from %d entries.' % (len(indexes), len(allRows)))
 
     # called when the "full entry" dialog is to be shown
     def slotFullEntry(self):
@@ -520,12 +550,14 @@ class CollectionModel(QtCore.QAbstractTableModel):
         rows = list(set([ind.row() for ind in indexes]))
 
         if len(rows) != 1:
-            QtGui.QMessageBox.warning(None,'Error displaying entry details','For displaying full details, please choose exactly one row')
+            QtGui.QMessageBox.warning(None, 'Error displaying entry details',
+                                      'For displaying full details, please choose exactly one row')
             return
 
         # sort: first row, then column
         thisEntry = self.collectionData[rows[0]][1]
-        dlg = DetailsDialog.DetailsDialog(self.application,thisEntry,self.application.currentGridFs)
+        dlg = DetailsDialog.DetailsDialog(
+            self.application, thisEntry, self.application.currentGridFs)
         dlg.exec_()
 
     # called to delete the selected ROWS
@@ -536,11 +568,12 @@ class CollectionModel(QtCore.QAbstractTableModel):
         if len(indexes) == 0:
             return
 
-        rows = set([ i.row() for i in indexes ])
+        rows = set([i.row() for i in indexes])
 
         # ask
         if not self.allowQuickDelete:
-            reply = QtGui.QMessageBox.warning(None,'Really proceed?','Delete %d lines?' % len(rows),QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            reply = QtGui.QMessageBox.warning(None, 'Really proceed?', 'Delete %d lines?' % len(
+                rows), QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
             if reply == QtGui.QMessageBox.No:
                 return
 
@@ -548,7 +581,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
         entries = [self.collectionData[i][1] for i in rows]
         for entry in entries:
             thisId = entry['_id']
-            self.application.currentRunCollection.remove({'_id': bson.objectid.ObjectId(thisId)})
+            self.application.currentRunCollection.remove(
+                {'_id': bson.objectid.ObjectId(thisId)})
 
         # remove selection
         self.getAssociatedView().selectionModel().clear()

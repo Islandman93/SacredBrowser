@@ -18,18 +18,21 @@ from . import DbConnection
 from . import DbModel
 from . import CollectionModel
 
+
 # Main application class, subclassed from QT framework
 class Application(QtGui.QApplication):
     ########################################################
-    ## MAIN PART
+    # MAIN PART
     ########################################################
+
     def __init__(self):
         # base constructor
         super(Application, self).__init__(sys.argv)
 
         # make settings object, read existing settings
         # FIXME only tested on Linux
-        self.settings = QtCore.QSettings(os.getenv('HOME') + '/.sacredbrowserrc',QtCore.QSettings.IniFormat)
+        self.settings = QtCore.QSettings(
+            os.getenv('HOME') + '/.sacredbrowserrc', QtCore.QSettings.IniFormat)
 
         # prepare database access (does not do anything)
         self.connection = DbConnection.DbConnection(self)
@@ -50,22 +53,33 @@ class Application(QtGui.QApplication):
 
         # connect signals/slots from main window
         self.mainWin.dbTree.activated.connect(self.slotChooseCollection)
-        self.mainWin.connectToDb.clicked.connect(self.slotConnectToMongoDbInstance)
+        self.mainWin.connectToDb.clicked.connect(
+            self.slotConnectToMongoDbInstance)
 
         # subwidgets in the main window
-        self.mainWin.fieldChoice.fieldChoiceChanged.connect(self.collectionModel.slotFieldSelectionChanged)
-        self.mainWin.quickDelete.stateChanged.connect(self.collectionModel.slotAllowQuickDeleteToggled)
-        self.sortDialog.sortOrderChanged.connect(self.collectionModel.slotSortOrderChanged)
-        self.mainWin.filterChoice.doNewSearch.connect(self.collectionModel.slotDoNewSearch)
+        self.mainWin.fieldChoice.fieldChoiceChanged.connect(
+            self.collectionModel.slotFieldSelectionChanged)
+        self.mainWin.quickDelete.stateChanged.connect(
+            self.collectionModel.slotAllowQuickDeleteToggled)
+        self.sortDialog.sortOrderChanged.connect(
+            self.collectionModel.slotSortOrderChanged)
+        self.mainWin.filterChoice.doNewSearch.connect(
+            self.collectionModel.slotDoNewSearch)
 
         # display settings and controls
-        self.mainWin.resultViewGroup.buttonClicked[int].connect(self.collectionModel.slotResultViewChanged)
+        self.mainWin.resultViewGroup.buttonClicked[int].connect(
+            self.collectionModel.slotResultViewChanged)
         self.mainWin.sortButton.toggled.connect(self.slotSortDialogToggled)
-        self.mainWin.deleteButton.clicked.connect(self.collectionModel.slotDeleteSelection)
-        self.mainWin.copyButton.clicked.connect(self.collectionModel.slotCopyToClipboard)
-        self.mainWin.fullEntryButton.clicked.connect(self.collectionModel.slotFullEntry)
-        self.mainWin.collectionView.horizontalHeader().sectionResized.connect(self.collectionModel.slotSectionResized)
-        self.mainWin.resetColWidthButton.clicked.connect(self.collectionModel.slotResetColWidth)
+        self.mainWin.deleteButton.clicked.connect(
+            self.collectionModel.slotDeleteSelection)
+        self.mainWin.copyButton.clicked.connect(
+            self.collectionModel.slotCopyToClipboard)
+        self.mainWin.fullEntryButton.clicked.connect(
+            self.collectionModel.slotFullEntry)
+        self.mainWin.collectionView.horizontalHeader().sectionResized.connect(
+            self.collectionModel.slotSectionResized)
+        self.mainWin.resetColWidthButton.clicked.connect(
+            self.collectionModel.slotResetColWidth)
 
         self.aboutToQuit.connect(self.finalCleanup)
 
@@ -94,27 +108,30 @@ class Application(QtGui.QApplication):
             self.currentGridFs = None
 
     # display status message below main window
-    def showStatusMessage(self,msg):
+    def showStatusMessage(self, msg):
         self.mainWin.statusbar.showMessage(msg)
 
     # final cleanup
     def finalCleanup(self):
-#         print('Doing empty final cleanup!')
+        #         print('Doing empty final cleanup!')
         pass
 
     ########################################################
-    ## SLOTS
+    # SLOTS
     ########################################################
 
     # this is called when the user chooses a mongodb collection
-    def slotChooseCollection(self,index):
+    def slotChooseCollection(self, index):
         node = index.internalPointer()
         if node.databaseName is not None and node.collectionId is not None:
             # chose a collection
-            self.currentDatabase = self.connection.getDatabase(node.databaseName)
-            self.currentRunCollection = self.connection.getCollection(self.currentDatabase,node.runCollectionName)
+            self.currentDatabase = self.connection.getDatabase(
+                node.databaseName)
+            self.currentRunCollection = self.connection.getCollection(
+                self.currentDatabase, node.runCollectionName)
             if node.gridCollectionPrefix is not None:
-                self.currentGridFs = gridfs.GridFS(self.currentDatabase,collection=node.gridCollectionPrefix)
+                self.currentGridFs = gridfs.GridFS(
+                    self.currentDatabase, collection=node.gridCollectionPrefix)
             else:
                 self.currentGridFs = None
             self.collectionSettingsName = self.currentDatabase.name + '/' + node.runCollectionName
@@ -122,23 +139,23 @@ class Application(QtGui.QApplication):
 
     # this is called when the "sort dialog" button is clicked (it depends on the button state whether the
     # dialog is opened or closed
-    def slotSortDialogToggled(self,on):
-        print('Toggled sort dialog to ',on)
+    def slotSortDialogToggled(self, on):
+        print('Toggled sort dialog to ', on)
 
         # main work
         self.sortDialog.setVisible(on)
-
 
     # this is called when the sort dialog is made invisible
     def slotSortDialogClosed(self):
         self.mainWin.sortButton.setChecked(False)
 
     ########################################################
-    ## SIGNALS
+    # SIGNALS
     ########################################################
 
+
 def run():
-    QtCore.pyqtRemoveInputHook() # may be helpful when debugging with pdb
+    QtCore.pyqtRemoveInputHook()  # may be helpful when debugging with pdb
     print('Starting SacredBrowser...')
     app = Application()
     result = app.exec_()

@@ -3,6 +3,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+
 from PyQt4 import QtCore, QtGui
 
 from . import DbTree
@@ -11,11 +12,13 @@ from . import FilterChoice
 from . import CollectionView
 from . import CollectionModel
 
+
 # Main window of the application, created by the Application class, which is also
 # responsible for setting the signal/slot connections
 class MainWin(QtGui.QMainWindow):
-    def __init__(self,application):
-        #Init the base class
+
+    def __init__(self, application):
+        # Init the base class
         QtGui.QMainWindow.__init__(self, None)
         self.application = application
         self.createWidgets()
@@ -24,18 +27,23 @@ class MainWin(QtGui.QMainWindow):
         self.dbTree = DbTree.DbTree(self.application)
         self.connectToDb = QtGui.QPushButton('C&onnect to MongoDb instance')
         self.fieldChoice = FieldChoiceWidget.FieldChoiceWidget()
-        self.quickDelete = QtGui.QCheckBox('&Allow delete without confirmation')
+        self.quickDelete = QtGui.QCheckBox(
+            '&Allow delete without confirmation')
 
         self.resultViewLabel = QtGui.QLabel('Result view mode')
 
-        self.resultViewGroup = QtGui.QButtonGroup() # Grouper for view mode - this does not have a visual representation!
+        # Grouper for view mode - this does not have a visual representation!
+        self.resultViewGroup = QtGui.QButtonGroup()
         self.resultViewRaw = QtGui.QRadioButton('Raw')
         self.resultViewRounded = QtGui.QRadioButton('Rounded')
         self.resultViewPercent = QtGui.QRadioButton('Percent')
 
-        self.resultViewGroup.addButton(self.resultViewRaw,CollectionModel.CollectionModel.ResultViewRaw)
-        self.resultViewGroup.addButton(self.resultViewRounded,CollectionModel.CollectionModel.ResultViewRounded)
-        self.resultViewGroup.addButton(self.resultViewPercent,CollectionModel.CollectionModel.ResultViewPercent)
+        self.resultViewGroup.addButton(
+            self.resultViewRaw, CollectionModel.CollectionModel.ResultViewRaw)
+        self.resultViewGroup.addButton(
+            self.resultViewRounded, CollectionModel.CollectionModel.ResultViewRounded)
+        self.resultViewGroup.addButton(
+            self.resultViewPercent, CollectionModel.CollectionModel.ResultViewPercent)
 
         self.sortButton = QtGui.QPushButton('&Sort Dialog')
         self.sortButton.setCheckable(True)
@@ -50,9 +58,11 @@ class MainWin(QtGui.QMainWindow):
         self.resetColWidthButton = QtGui.QPushButton('&Reset column widths')
 
         self.average = QtGui.QLabel('No data loaded')
-        self.average.setSizePolicy ( QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.average.setSizePolicy(
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         self.statusbar = QtGui.QStatusBar()
-        self.statusbar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.statusbar.setSizePolicy(
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
         # layout!
         self.commandsLayout = QtGui.QHBoxLayout()
@@ -73,7 +83,6 @@ class MainWin(QtGui.QMainWindow):
         self.fieldAreaLayout.addWidget(self.sortButton)
         self.fieldAreaLayout.addLayout(self.commandsLayout)
 
-
         self.fieldAreaWidget = QtGui.QWidget()
         self.fieldAreaWidget.setLayout(self.fieldAreaLayout)
 
@@ -86,7 +95,8 @@ class MainWin(QtGui.QMainWindow):
         self.belowCollectionViewLayout.addWidget(self.resetColWidthButton)
 
         self.belowCollectionViewWidget = QtGui.QWidget()
-        self.belowCollectionViewWidget.setLayout(self.belowCollectionViewLayout)
+        self.belowCollectionViewWidget.setLayout(
+            self.belowCollectionViewLayout)
 
         self.leftVLayout = QtGui.QVBoxLayout()
         self.leftVLayout.addWidget(self.dbTree)
@@ -115,6 +125,6 @@ class MainWin(QtGui.QMainWindow):
         self.setCentralWidget(self.centralWidget)
 
     # reimplemented to close sort dialog as well
-    def closeEvent(self,event):
+    def closeEvent(self, event):
 
-        self.application.sortDialog = None # A HACK TODO
+        self.application.sortDialog = None  # A HACK TODO

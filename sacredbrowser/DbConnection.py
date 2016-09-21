@@ -8,10 +8,12 @@ import pymongo
 import bson
 import numpy as np
 
+
 # This class represents a connection to a mongodb server. It offers just a few interface functions
 # allowing to access "databases" and "collections"
 class DbConnection(object):
-    def __init__(self,application):
+
+    def __init__(self, application):
         self.application = application
         self.mongoClient = None
 
@@ -21,21 +23,25 @@ class DbConnection(object):
         if lastMongoURI is None:
             lastMongoURI = 'mongodb://localhost:27017'
         else:
-            # Fix in python 3 AttributeError: 'str' object has no attribute 'toString'
+            # Fix in python 3 AttributeError: 'str' object has no attribute
+            # 'toString'
             try:
                 lastMongoURI = lastMongoURI.toString()
             except AttributeError:
                 pass
 
-        (newMongoUri,ok) = QtGui.QInputDialog.getText(None,'Connect to database','Connection URI (example: mongodb://localhost:27017)',QtGui.QLineEdit.Normal,lastMongoURI)
+        (newMongoUri, ok) = QtGui.QInputDialog.getText(None, 'Connect to database',
+                                                       'Connection URI (example: mongodb://localhost:27017)', QtGui.QLineEdit.Normal, lastMongoURI)
 
         if ok:
-            self.application.settings.setValue('Global/LastMongoURI',str(newMongoUri))
+            self.application.settings.setValue(
+                'Global/LastMongoURI', str(newMongoUri))
             try:
-                self.mongoClient = pymongo.mongo_client.MongoClient(str(newMongoUri),socketTimeoutMS=50000) # TODO allow for remote connection?
+                self.mongoClient = pymongo.mongo_client.MongoClient(
+                    str(newMongoUri), socketTimeoutMS=50000)  # TODO allow for remote connection?
             except pymongo.errors.ConnectionFailure as e:
-                QtGui.QMessageBox.critical(None,'Could not connect to database',
-                        'Database connection could not be established. Pymongo raised error:\n%s' % str(e))
+                QtGui.QMessageBox.critical(None, 'Could not connect to database',
+                                           'Database connection could not be established. Pymongo raised error:\n%s' % str(e))
                 return False
 
             return True
@@ -47,15 +53,15 @@ class DbConnection(object):
 
     # go through collections and return
     # db may be a string or a database object
-    def getCollectionNames(self,db):
+    def getCollectionNames(self, db):
         if isinstance(db, str):
             db = getDatabase(db)
         return db.collection_names()
 
-    def getDatabase(self,name):
+    def getDatabase(self, name):
         return self.mongoClient[name]
 
-    def getCollection(self,db,name):
+    def getCollection(self, db, name):
         # db may be a string or a database object
         if isinstance(db, str):
             db = getDatabase(db)

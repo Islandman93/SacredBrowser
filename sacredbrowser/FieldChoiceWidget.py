@@ -6,24 +6,26 @@ from __future__ import unicode_literals
 from PyQt4 import QtCore, QtGui
 import sys
 
-# This class implements a widget consisting of two lists. The first one contains a selection of 
+
+# This class implements a widget consisting of two lists. The first one contains a selection of
 # available items, the right one a (sorted) list of chosen items. Items may be moved between the lists,
 # as well as sorted within the list of chosen items.
 class FieldChoiceWidget(QtGui.QWidget):
 
     ########################################################
-    ## SIGNALS
+    # SIGNALS
     ########################################################
-      
+
     fieldChoiceChanged = QtCore.pyqtSignal(list, name='fieldChoiceChanged')
 
     ########################################################
-    ## MAIN PART
+    # MAIN PART
     ########################################################
 
     def __init__(self):
-        super(FieldChoiceWidget,self).__init__()
-        self.setSizePolicy (QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
+        super(FieldChoiceWidget, self).__init__()
+        self.setSizePolicy(QtGui.QSizePolicy.Expanding,
+                           QtGui.QSizePolicy.Expanding)
 
         # FIXME TODO debug only
 #         p = self.palette()
@@ -38,48 +40,57 @@ class FieldChoiceWidget(QtGui.QWidget):
         # make subwidgets
         self.availableFieldsDisplay = QtGui.QListView()
         self.availableFieldsDisplay.setModel(self.availableFields)
-        self.availableFieldsDisplay.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.availableFieldsDisplay.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
-
+        self.availableFieldsDisplay.setSelectionMode(
+            QtGui.QAbstractItemView.SingleSelection)
+        self.availableFieldsDisplay.setSizePolicy(
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         self.selectedFieldsDisplay = QtGui.QListView()
         self.selectedFieldsDisplay.setModel(self.selectedFields)
-        self.selectedFieldsDisplay.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.selectedFieldsDisplay.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
-      
+        self.selectedFieldsDisplay.setSelectionMode(
+            QtGui.QAbstractItemView.SingleSelection)
+        self.selectedFieldsDisplay.setSizePolicy(
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
         self.addButton = QtGui.QPushButton('+')
-        self.addButton.setSizePolicy(QtGui.QSizePolicy.Preferred,QtGui.QSizePolicy.Expanding)
+        self.addButton.setSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         self.removeButton = QtGui.QPushButton('-')
-        self.removeButton.setSizePolicy(QtGui.QSizePolicy.Preferred,QtGui.QSizePolicy.Expanding)
+        self.removeButton.setSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         self.upButton = QtGui.QPushButton('UP')
-        self.upButton.setSizePolicy(QtGui.QSizePolicy.Preferred,QtGui.QSizePolicy.Expanding)
+        self.upButton.setSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         self.downButton = QtGui.QPushButton('DOWN')
-        self.downButton.setSizePolicy(QtGui.QSizePolicy.Preferred,QtGui.QSizePolicy.Expanding)
+        self.downButton.setSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
 
         # connect
         self.addButton.clicked.connect(self.slotAddButtonClicked)
         self.removeButton.clicked.connect(self.slotRemoveButtonClicked)
         self.upButton.clicked.connect(self.slotUpButtonClicked)
         self.downButton.clicked.connect(self.slotDownButtonClicked)
-        self.selectedFieldsDisplay.selectionModel().currentChanged.connect(self.slotUpdateButtonStatus)
+        self.selectedFieldsDisplay.selectionModel(
+        ).currentChanged.connect(self.slotUpdateButtonStatus)
 
         # make layout
         self.layout = QtGui.QGridLayout()
-        self.layout.addWidget(self.availableFieldsDisplay,0,0,2,1)
-        self.layout.addWidget(self.addButton,0,1,1,1)
-        self.layout.addWidget(self.removeButton,1,1,1,1)
-      
-        self.layout.addWidget(self.selectedFieldsDisplay,0,2,2,1)
-        self.layout.addWidget(self.upButton,0,3,1,1)
-        self.layout.addWidget(self.downButton,1,3,1,1)
+        self.layout.addWidget(self.availableFieldsDisplay, 0, 0, 2, 1)
+        self.layout.addWidget(self.addButton, 0, 1, 1, 1)
+        self.layout.addWidget(self.removeButton, 1, 1, 1, 1)
+
+        self.layout.addWidget(self.selectedFieldsDisplay, 0, 2, 2, 1)
+        self.layout.addWidget(self.upButton, 0, 3, 1, 1)
+        self.layout.addWidget(self.downButton, 1, 3, 1, 1)
 
         self.setLayout(self.layout)
 
         # update button status (should disable everything)
         self.updateButtonStatus()
 
-    # Called when a new data collection is displayed. The data is passed in as text
-    def reset(self,newAvailableTexts,newSelectedTexts):
+    # Called when a new data collection is displayed. The data is passed in as
+    # text
+    def reset(self, newAvailableTexts, newSelectedTexts):
         # precheck
         for txt in newAvailableTexts:
             assert type(txt) == unicode
@@ -92,7 +103,8 @@ class FieldChoiceWidget(QtGui.QWidget):
 
         # fill model
         for txt in newAvailableTexts:
-            # note that we will emit fieldChoiceChanged afterwards, for the list view
+            # note that we will emit fieldChoiceChanged afterwards, for the
+            # list view
             item = QtGui.QStandardItem(txt)
             item.setEditable(False)
             # CAUTION!
@@ -109,17 +121,20 @@ class FieldChoiceWidget(QtGui.QWidget):
             self.selectedFields.appendRow(item)
 
         # update widgets
-        if self.availableFields.hasIndex(0,0):
-            self.availableFieldsDisplay.setCurrentIndex(self.availableFields.indexFromItem(self.availableFields.item(0)))
+        if self.availableFields.hasIndex(0, 0):
+            self.availableFieldsDisplay.setCurrentIndex(
+                self.availableFields.indexFromItem(self.availableFields.item(0)))
 
-        if self.selectedFields.hasIndex(0,0):
-            self.selectedFieldsDisplay.setCurrentIndex(self.selectedFields.indexFromItem(self.selectedFields.item(0)))
+        if self.selectedFields.hasIndex(0, 0):
+            self.selectedFieldsDisplay.setCurrentIndex(
+                self.selectedFields.indexFromItem(self.selectedFields.item(0)))
 
         self.updateButtonStatus()
 
         self.fieldChoiceChanged.emit(self.getCurrentSelectedFields())
 
-    # returns a list of currently selected fields (i.e. what we actually care about)
+    # returns a list of currently selected fields (i.e. what we actually care
+    # about)
     def getCurrentSelectedFields(self):
         result = []
         for i in range(self.selectedFields.rowCount()):
@@ -130,12 +145,12 @@ class FieldChoiceWidget(QtGui.QWidget):
 
     # update the enabledness of the buttons
     def updateButtonStatus(self):
-        if self.availableFields.hasIndex(0,0): # ... is not empty
+        if self.availableFields.hasIndex(0, 0):  # ... is not empty
             self.addButton.setEnabled(True)
         else:
             self.addButton.setEnabled(False)
 
-        if self.selectedFields.hasIndex(0,0):
+        if self.selectedFields.hasIndex(0, 0):
             self.removeButton.setEnabled(True)
         else:
             self.removeButton.setEnabled(False)
@@ -143,7 +158,8 @@ class FieldChoiceWidget(QtGui.QWidget):
         theIndex = self.selectedFieldsDisplay.currentIndex()
         if theIndex.isValid():
             self.upButton.setEnabled(theIndex.row() > 0)
-            self.downButton.setEnabled(theIndex.row() < self.selectedFields.rowCount() - 1)
+            self.downButton.setEnabled(
+                theIndex.row() < self.selectedFields.rowCount() - 1)
         else:
             self.upButton.setEnabled(False)
             self.downButton.setEnabled(False)
@@ -157,10 +173,10 @@ class FieldChoiceWidget(QtGui.QWidget):
 #             self.downButton.setEnabled(False)
 
     ########################################################
-    ## SLOTS
+    # SLOTS
     ########################################################
     def slotAddButtonClicked(self):
-        # take current selection from availableFieldsDisplay 
+        # take current selection from availableFieldsDisplay
         theIndex = self.availableFieldsDisplay.currentIndex()
         assert theIndex.isValid()
         theItem = self.availableFields.itemFromIndex(theIndex)
@@ -169,32 +185,35 @@ class FieldChoiceWidget(QtGui.QWidget):
         # remove that from availableFields
         self.availableFields.removeRow(theIndex.row())
         if self.availableFields.rowCount() > theIndex.row():
-            self.availableFieldsDisplay.setCurrentIndex(self.availableFields.indexFromItem(self.availableFields.item(theIndex.row())))
+            self.availableFieldsDisplay.setCurrentIndex(
+                self.availableFields.indexFromItem(self.availableFields.item(theIndex.row())))
         elif self.availableFields.rowCount() > theIndex.row() - 1:
             # at the end
-            self.availableFieldsDisplay.setCurrentIndex(self.availableFields.indexFromItem(self.availableFields.item(theIndex.row() - 1)))
+            self.availableFieldsDisplay.setCurrentIndex(self.availableFields.indexFromItem(
+                self.availableFields.item(theIndex.row() - 1)))
         # otherwise, that's empty
 
         # add it to selectedFields, before the current selection
         selIndex = self.selectedFieldsDisplay.currentIndex()
         if selIndex.isValid():
-           currentSelectedFieldsPosition = selIndex.row()
+            currentSelectedFieldsPosition = selIndex.row()
         else:
-           currentSelectedFieldsPosition = 0
+            currentSelectedFieldsPosition = 0
         newItem = QtGui.QStandardItem(theText)
         newItem.setEditable(False)
-        self.selectedFields.insertRow(currentSelectedFieldsPosition,newItem)
+        self.selectedFields.insertRow(currentSelectedFieldsPosition, newItem)
 
         # make sure we have a selection
         selIndex = self.selectedFieldsDisplay.currentIndex()
         if not selIndex.isValid():
-            self.selectedFieldsDisplay.setCurrentIndex(self.selectedFields.indexFromItem(self.selectedFields.item(0)))
+            self.selectedFieldsDisplay.setCurrentIndex(
+                self.selectedFields.indexFromItem(self.selectedFields.item(0)))
 
         self.updateButtonStatus()
         self.fieldChoiceChanged.emit(self.getCurrentSelectedFields())
-    
+
     def slotRemoveButtonClicked(self):
-        # take current selection from selectedFieldsDisplay 
+        # take current selection from selectedFieldsDisplay
         theIndex = self.selectedFieldsDisplay.currentIndex()
         assert theIndex.isValid()
         theItem = self.selectedFields.itemFromIndex(theIndex)
@@ -203,27 +222,30 @@ class FieldChoiceWidget(QtGui.QWidget):
         # remove that from selectedFields
         self.selectedFields.removeRow(theIndex.row())
         if self.selectedFields.rowCount() > theIndex.row():
-            self.selectedFieldsDisplay.setCurrentIndex(self.selectedFields.indexFromItem(self.selectedFields.item(theIndex.row())))
+            self.selectedFieldsDisplay.setCurrentIndex(
+                self.selectedFields.indexFromItem(self.selectedFields.item(theIndex.row())))
         elif self.selectedFields.rowCount() > theIndex.row() - 1:
             # at the end
-            self.selectedFieldsDisplay.setCurrentIndex(self.selectedFields.indexFromItem(self.selectedFields.item(theIndex.row() - 1)))
+            self.selectedFieldsDisplay.setCurrentIndex(
+                self.selectedFields.indexFromItem(self.selectedFields.item(theIndex.row() - 1)))
         # otherwise, that's empty
 
         # add it to availableFields
         currentAvFieldsPosition = 0
         newItem = QtGui.QStandardItem(theText)
         newItem.setEditable(False)
-        self.availableFields.insertRow(currentAvFieldsPosition,newItem)
+        self.availableFields.insertRow(currentAvFieldsPosition, newItem)
 
         # make sure we have a selection
         avIndex = self.availableFieldsDisplay.currentIndex()
         if not avIndex.isValid():
-            self.availableFieldsDisplay.setCurrentIndex(self.availableFields.indexFromItem(self.availableFields.item(0)))
+            self.availableFieldsDisplay.setCurrentIndex(
+                self.availableFields.indexFromItem(self.availableFields.item(0)))
 
         self.updateButtonStatus()
         self.fieldChoiceChanged.emit(self.getCurrentSelectedFields())
         pass
-    
+
     def slotUpButtonClicked(self):
         theIndex = self.selectedFieldsDisplay.currentIndex()
         assert theIndex.isValid()
@@ -240,7 +262,8 @@ class FieldChoiceWidget(QtGui.QWidget):
         otherItem.setText(currentText)
 
         # change selection
-        self.selectedFieldsDisplay.setCurrentIndex(self.selectedFields.indexFromItem(self.selectedFields.item(otherRow)))
+        self.selectedFieldsDisplay.setCurrentIndex(
+            self.selectedFields.indexFromItem(self.selectedFields.item(otherRow)))
 
         # update
         self.updateButtonStatus()
@@ -262,7 +285,8 @@ class FieldChoiceWidget(QtGui.QWidget):
         otherItem.setText(currentText)
 
         # change selection
-        self.selectedFieldsDisplay.setCurrentIndex(self.selectedFields.indexFromItem(self.selectedFields.item(otherRow)))
+        self.selectedFieldsDisplay.setCurrentIndex(
+            self.selectedFields.indexFromItem(self.selectedFields.item(otherRow)))
 
         # update
         self.updateButtonStatus()
@@ -270,5 +294,3 @@ class FieldChoiceWidget(QtGui.QWidget):
 
     def slotUpdateButtonStatus(self):
         self.updateButtonStatus()
-
-
